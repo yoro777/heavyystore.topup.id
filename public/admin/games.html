@@ -1,0 +1,207 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Game — Admin HEAVY STORE TOP UP</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="admin-main">
+      <header class="admin-topbar" id="adminTopbar"></header>
+      <main class="admin-content">
+        <div class="admin-toolbar mb-3">
+          <input type="search" class="form-control" id="fSearch" placeholder="Cari game...">
+          <div class="spacer"></div>
+          <button class="btn btn-hvy" id="btnAdd"><i class="bi bi-plus-lg me-1"></i>Tambah Game</button>
+        </div>
+
+        <div class="hvy-card p-0">
+          <div class="hvy-table-wrap">
+            <table class="hvy-table">
+              <thead><tr><th>Game</th><th>Kategori</th><th>Publisher</th><th>Produk</th><th>Server ID</th><th>Status</th><th>Urutan</th><th></th></tr></thead>
+              <tbody id="tbody"><tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Tambah Game</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="formError" class="alert alert-danger d-none"></div>
+          <form id="gameForm">
+            <input type="hidden" id="gId">
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label">Nama Game *</label><input class="form-control" id="gName" required></div>
+              <div class="col-md-6"><label class="form-label">Slug <span class="text-muted-2 small">(opsional)</span></label><input class="form-control mono" id="gSlug" placeholder="auto dari nama"></div>
+              <div class="col-md-6"><label class="form-label">Kategori</label>
+                <select class="form-select" id="gCategory">
+                  <option value="mobile">Mobile</option><option value="pc">PC</option><option value="console">Console</option>
+                  <option value="voucher">Voucher</option><option value="other">Lainnya</option>
+                </select>
+              </div>
+              <div class="col-md-6"><label class="form-label">Publisher</label><input class="form-control" id="gPublisher"></div>
+              <div class="col-md-6"><label class="form-label">Logo URL</label><input class="form-control" id="gLogo" placeholder="/assets/games/xxx.svg"></div>
+              <div class="col-md-6"><label class="form-label">Banner URL</label><input class="form-control" id="gBanner"></div>
+              <div class="col-12"><label class="form-label">Deskripsi</label><textarea class="form-control" id="gDesc" rows="2"></textarea></div>
+              <div class="col-md-4"><label class="form-label">Urutan</label><input type="number" class="form-control" id="gSort" value="0"></div>
+              <div class="col-md-4"><label class="form-label">Label Server ID</label><input class="form-control" id="gServerLabel" value="Server ID"></div>
+              <div class="col-md-4 d-flex flex-column justify-content-end gap-2">
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="gRequiresServer"><label class="form-check-label" for="gRequiresServer">Butuh Server ID</label></div>
+              </div>
+              <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="gActive" checked><label class="form-check-label" for="gActive">Aktif</label></div></div>
+              <div class="col-md-6"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="gMaintenance"><label class="form-check-label" for="gMaintenance">Maintenance</label></div></div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-hvy-ghost" data-bs-dismiss="modal">Batal</button>
+          <button class="btn btn-hvy" id="btnSave"><i class="bi bi-check2 me-1"></i>Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/admin/js/admin-common.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const el = (id) => document.getElementById(id);
+      let GAMES = [];
+
+      function render() {
+        const q = el('fSearch').value.toLowerCase();
+        const list = GAMES.filter((g) => g.name.toLowerCase().includes(q) || (g.publisher || '').toLowerCase().includes(q));
+        el('tbody').innerHTML = list.length ? list.map(function (g) {
+          return '<tr>' +
+            '<td><div class="d-flex align-items-center gap-2"><img src="' + HVY.escapeHtml(g.logo_url || '/assets/logo.png') + '" style="width:34px;height:34px;object-fit:contain" onerror="this.src=\'/assets/logo.png\'"><div><div class="fw-semibold">' + HVY.escapeHtml(g.name) + '</div><div class="text-muted-2 small mono">' + HVY.escapeHtml(g.slug) + '</div></div></div></td>' +
+            '<td>' + HVY.escapeHtml(g.category) + '</td>' +
+            '<td>' + HVY.escapeHtml(g.publisher || '-') + '</td>' +
+            '<td>' + g.product_count + '</td>' +
+            '<td>' + (g.requires_server_id ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-dash text-muted-2"></i>') + '</td>' +
+            '<td>' + (g.is_maintenance ? '<span class="badge-status st-failed">Maintenance</span>' : g.is_active ? '<span class="badge-status st-success">Aktif</span>' : '<span class="badge-status st-expired">Nonaktif</span>') + '</td>' +
+            '<td>' + g.sort_order + '</td>' +
+            '<td class="text-nowrap">' +
+              '<button class="btn btn-hvy-ghost btn-sm" data-edit="' + g.id + '"><i class="bi bi-pencil"></i></button> ' +
+              '<button class="btn btn-hvy-ghost btn-sm text-danger" data-del="' + g.id + '"><i class="bi bi-trash"></i></button>' +
+            '</td>' +
+          '</tr>';
+        }).join('') : '<tr><td colspan="8" class="text-center text-muted-2 py-4">Tidak ada game</td></tr>';
+
+        el('tbody').querySelectorAll('button[data-edit]').forEach((b) => b.addEventListener('click', () => openEdit(Number(b.dataset.edit))));
+        el('tbody').querySelectorAll('button[data-del]').forEach((b) => b.addEventListener('click', () => del(Number(b.dataset.del))));
+      }
+
+      function openAdd() {
+        el('modalTitle').textContent = 'Tambah Game';
+        el('gameForm').reset();
+        el('gId').value = '';
+        el('gActive').checked = true;
+        el('gSort').value = 0;
+        el('gServerLabel').value = 'Server ID';
+        el('formError').classList.add('d-none');
+        ADMIN.showModal('editModal');
+      }
+
+      function openEdit(id) {
+        const g = GAMES.find((x) => x.id === id);
+        if (!g) return;
+        el('modalTitle').textContent = 'Edit Game';
+        el('gId').value = g.id;
+        el('gName').value = g.name || '';
+        el('gSlug').value = g.slug || '';
+        el('gCategory').value = g.category || 'mobile';
+        el('gPublisher').value = g.publisher || '';
+        el('gLogo').value = g.logo_url || '';
+        el('gBanner').value = g.banner_url || '';
+        el('gDesc').value = g.description || '';
+        el('gSort').value = g.sort_order || 0;
+        el('gServerLabel').value = g.server_id_label || 'Server ID';
+        el('gRequiresServer').checked = !!g.requires_server_id;
+        el('gActive').checked = !!g.is_active;
+        el('gMaintenance').checked = !!g.is_maintenance;
+        el('formError').classList.add('d-none');
+        ADMIN.showModal('editModal');
+      }
+
+      async function save() {
+        const id = el('gId').value;
+        const payload = {
+          name: el('gName').value.trim(),
+          slug: el('gSlug').value.trim() || undefined,
+          category: el('gCategory').value,
+          publisher: el('gPublisher').value.trim() || null,
+          logo_url: el('gLogo').value.trim() || null,
+          banner_url: el('gBanner').value.trim() || null,
+          description: el('gDesc').value.trim() || null,
+          sort_order: Number(el('gSort').value) || 0,
+          server_id_label: el('gServerLabel').value.trim() || 'Server ID',
+          requires_server_id: el('gRequiresServer').checked,
+          is_active: el('gActive').checked,
+          is_maintenance: el('gMaintenance').checked,
+        };
+        if (!payload.name) { el('formError').textContent = 'Nama game wajib diisi'; el('formError').classList.remove('d-none'); return; }
+        const btn = el('btnSave');
+        HVY.setLoading(btn, true);
+        try {
+          if (id) await ADMIN.api.updateGame(Number(id), payload);
+          else await ADMIN.api.createGame(payload);
+          HVY.toast('Game disimpan', 'success');
+          ADMIN.hideModal('editModal');
+          await load();
+        } catch (err) {
+          el('formError').textContent = err.message; el('formError').classList.remove('d-none');
+        } finally { HVY.setLoading(btn, false); }
+      }
+
+      async function del(id) {
+        const g = GAMES.find((x) => x.id === id);
+        const ok = await ADMIN.confirmAction('Hapus game "' + (g ? g.name : '') + '"? Produk terkait juga akan terhapus.', { danger: true, okText: 'Hapus' });
+        if (!ok) return;
+        try { await ADMIN.api.deleteGame(id); HVY.toast('Game dihapus', 'success'); await load(); }
+        catch (err) { HVY.toast(err.message, 'danger'); }
+      }
+
+      async function load() {
+        try {
+          const res = await ADMIN.api.games();
+          GAMES = res.games || [];
+          render();
+        } catch (err) {
+          el('tbody').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">' + HVY.escapeHtml(err.message) + '</td></tr>';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        const adm = await ADMIN.mountShell('games');
+        if (!adm) return;
+        el('btnAdd').addEventListener('click', openAdd);
+        el('btnSave').addEventListener('click', save);
+        el('fSearch').addEventListener('input', HVY.debounce(render, 180));
+        load();
+      });
+    })();
+  </script>
+</body>
+</html>

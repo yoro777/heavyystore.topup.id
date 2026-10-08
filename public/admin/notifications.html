@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Notifikasi — Admin HEAVY STORE TOP UP</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="admin-main">
+      <header class="admin-topbar" id="adminTopbar"></header>
+      <main class="admin-content">
+        <div class="admin-toolbar mb-3">
+          <span class="pill"><i class="bi bi-bell me-1"></i>Total: <span id="mTotal" class="ms-1">0</span></span>
+          <div class="spacer"></div>
+          <button class="btn btn-hvy-ghost btn-sm" id="btnRefresh"><i class="bi bi-arrow-clockwise me-1"></i>Muat Ulang</button>
+        </div>
+
+        <div class="hvy-card p-0">
+          <div class="hvy-table-wrap">
+            <table class="hvy-table">
+              <thead><tr><th>Waktu</th><th>Penerima</th><th>Tipe</th><th>Judul / Pesan</th><th>Kanal</th><th>Status</th></tr></thead>
+              <tbody id="tbody"><tr><td colspan="6" class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pagination-hvy" id="pager"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/admin/js/admin-common.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const el = (id) => document.getElementById(id);
+      const LIMIT = 30;
+      let offset = 0;
+
+      const CHANNEL_ICON = { inapp: 'bi-bell-fill', email: 'bi-envelope-fill', whatsapp: 'bi-whatsapp' };
+
+      function render(rows) {
+        el('tbody').innerHTML = rows.length ? rows.map(function (n) {
+          return '<tr>' +
+            '<td class="small text-muted-2 text-nowrap">' + HVY.fmtDate(n.created_at) + '</td>' +
+            '<td>' + (n.user_username ? HVY.escapeHtml(n.user_username) : '<span class="text-muted-2">Sistem</span>') + (n.order_id ? '<div class="text-muted-2 small mono">' + HVY.escapeHtml(n.order_id) + '</div>' : '') + '</td>' +
+            '<td><span class="pill">' + HVY.escapeHtml(n.type) + '</span></td>' +
+            '<td><div class="fw-semibold">' + HVY.escapeHtml(n.title) + '</div><div class="text-muted-2 small">' + HVY.escapeHtml(n.message || '') + '</div></td>' +
+            '<td><i class="bi ' + (CHANNEL_ICON[n.channel] || 'bi-bell') + ' me-1"></i>' + HVY.escapeHtml(n.channel) + '</td>' +
+            '<td>' + (n.is_read ? '<span class="badge-status st-success">Dibaca</span>' : '<span class="badge-status st-pending">Belum</span>') + '</td>' +
+          '</tr>';
+        }).join('') : '<tr><td colspan="6" class="text-center text-muted-2 py-4">Belum ada notifikasi</td></tr>';
+      }
+
+      async function load() {
+        try {
+          const res = await ADMIN.api.notifications({ limit: LIMIT, offset });
+          el('mTotal').textContent = res.total || 0;
+          render(res.notifications || []);
+          ADMIN.renderPagination('pager', { total: res.total || 0, limit: LIMIT, offset, onChange: (o) => { offset = o; load(); } });
+        } catch (err) {
+          el('tbody').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">' + HVY.escapeHtml(err.message) + '</td></tr>';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        const adm = await ADMIN.mountShell('notifications');
+        if (!adm) return;
+        el('btnRefresh').addEventListener('click', load);
+        load();
+      });
+    })();
+  </script>
+</body>
+</html>

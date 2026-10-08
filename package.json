@@ -1,0 +1,22 @@
+{
+  "name": "heavy-store-topup",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HEAVY STORE TOP UP — Platform top up game full-stack (Vercel-ready).",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "vercel dev",
+    "serve": "node scripts/dev-server.js",
+    "db:setup": "node scripts/db-setup.js",
+    "db:seed": "node scripts/db-seed.js",
+    "verify": "node scripts/verify.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

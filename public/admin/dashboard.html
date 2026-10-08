@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dashboard — Admin HEAVY STORE TOP UP</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="admin-main">
+      <header class="admin-topbar" id="adminTopbar"></header>
+      <main class="admin-content">
+        <div class="row g-3 mb-3" id="statGrid">
+          <div class="col-6 col-lg-3"><div class="skeleton skeleton-card"></div></div>
+          <div class="col-6 col-lg-3"><div class="skeleton skeleton-card"></div></div>
+          <div class="col-6 col-lg-3"><div class="skeleton skeleton-card"></div></div>
+          <div class="col-6 col-lg-3"><div class="skeleton skeleton-card"></div></div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-lg-8">
+            <div class="chart-box hvy-card h-100">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>Transaksi 14 Hari Terakhir</h6>
+                <span class="pill"><i class="bi bi-graph-up me-1"></i>Revenue</span>
+              </div>
+              <div class="bar-chart" id="chart"></div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="hvy-card p-3 h-100">
+              <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart me-2"></i>Ringkasan Status</h6>
+              <div id="statusSummary"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-7">
+            <div class="hvy-card p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>Transaksi Terbaru</h6>
+                <a href="/admin/transactions.html" class="btn btn-hvy-ghost btn-sm">Semua <i class="bi bi-arrow-right ms-1"></i></a>
+              </div>
+              <div class="hvy-table-wrap">
+                <table class="hvy-table">
+                  <thead><tr><th>Order</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
+                  <tbody id="recentBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="hvy-card p-3 h-100">
+              <h6 class="fw-bold mb-3"><i class="bi bi-database me-2"></i>Katalog &amp; Pelanggan</h6>
+              <div id="catalogSummary"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/admin/js/admin-common.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const el = (id) => document.getElementById(id);
+
+      function statCard(label, value, icon, accent) {
+        return '<div class="stat-card hvy-card h-100"><div class="d-flex justify-content-between align-items-start">' +
+          '<div><div class="label">' + label + '</div><div class="value">' + value + '</div></div>' +
+          '<div class="icon"><i class="bi ' + icon + '"></i></div></div></div>';
+      }
+
+      function renderStats(s) {
+        el('statGrid').innerHTML =
+          '<div class="col-6 col-lg-3">' + statCard('Revenue (Sukses)', HVY.fmt(s.revenue), 'bi-cash-stack') + '</div>' +
+          '<div class="col-6 col-lg-3">' + statCard('Profit (Sukses)', HVY.fmt(s.profit), 'bi-graph-up-arrow') + '</div>' +
+          '<div class="col-6 col-lg-3">' + statCard('Transaksi Hari Ini', s.today_transactions, 'bi-calendar-day') + '</div>' +
+          '<div class="col-6 col-lg-3">' + statCard('Total Transaksi', s.total_transactions, 'bi-receipt') + '</div>';
+      }
+
+      function renderChart(chart) {
+        const max = Math.max(1, ...chart.map((c) => Number(c.count)));
+        el('chart').innerHTML = chart.map(function (c) {
+          const h = Math.round((Number(c.count) / max) * 100);
+          const d = new Date(c.day);
+          const lbl = d.getDate() + '/' + (d.getMonth() + 1);
+          return '<div class="bar-col" title="' + c.day + ' — ' + c.count + ' transaksi — ' + HVY.fmt(c.revenue) + '">' +
+            '<div class="bar" style="height:' + Math.max(h, 2) + '%"></div>' +
+            '<div class="bar-label">' + lbl + '</div></div>';
+        }).join('');
+      }
+
+      function renderStatus(s) {
+        const rows = [
+          ['Sukses', s.success, 'st-success'],
+          ['Pending/Proses', s.pending, 'st-processing'],
+          ['Gagal/Expired', s.failed, 'st-failed'],
+          ['Refund', s.refunded, 'st-refunded'],
+        ];
+        el('statusSummary').innerHTML = rows.map(function (r) {
+          return '<div class="kv"><span class="k">' + r[0] + '</span><span class="v"><span class="badge-status ' + r[2] + '">' + r[1] + '</span></span></div>';
+        }).join('') +
+        '<div class="divider-silver my-3"></div>' +
+        '<div class="kv"><span class="k">Revenue hari ini</span><span class="v silver-text">' + HVY.fmt(s.revenue_today) + '</span></div>';
+      }
+
+      function renderCatalog(s) {
+        el('catalogSummary').innerHTML =
+          '<div class="kv"><span class="k"><i class="bi bi-people me-1"></i>Total customer</span><span class="v">' + s.customers + '</span></div>' +
+          '<div class="kv"><span class="k"><i class="bi bi-person-check me-1"></i>Customer aktif</span><span class="v">' + s.active_customers + '</span></div>' +
+          '<div class="kv"><span class="k"><i class="bi bi-controller me-1"></i>Game</span><span class="v">' + s.games + '</span></div>' +
+          '<div class="kv"><span class="k"><i class="bi bi-box-seam me-1"></i>Produk</span><span class="v">' + s.products + '</span></div>' +
+          '<div class="kv"><span class="k"><i class="bi bi-box me-1"></i>Produk aktif</span><span class="v">' + s.active_products + '</span></div>';
+      }
+
+      function renderRecent(rows) {
+        if (!rows.length) { el('recentBody').innerHTML = '<tr><td colspan="4" class="text-center text-muted-2 py-4">Belum ada transaksi</td></tr>'; return; }
+        el('recentBody').innerHTML = rows.map(function (r) {
+          return '<tr>' +
+            '<td class="mono">' + HVY.escapeHtml(r.order_id) + '</td>' +
+            '<td>' + HVY.escapeHtml(r.product_name || '-') + '<div class="text-muted-2 small mono">' + HVY.escapeHtml(r.game_user_id || '') + '</div></td>' +
+            '<td class="fw-bold">' + HVY.fmt(r.grand_total) + '</td>' +
+            '<td>' + ADMIN.topupBadge(r.status) + '</td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        const adm = await ADMIN.mountShell('dashboard');
+        if (!adm) return;
+        try {
+          const res = await ADMIN.api.dashboard();
+          renderStats(res.stats);
+          renderChart(res.chart || []);
+          renderStatus(res.stats);
+          renderCatalog(res.stats);
+          renderRecent(res.recent || []);
+        } catch (err) {
+          HVY.toast(err.message, 'danger');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

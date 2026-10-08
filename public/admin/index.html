@@ -1,0 +1,169 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Admin Login — HEAVY STORE TOP UP</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="admin-login-wrap">
+    <div class="admin-login-card hvy-card">
+      <div class="text-center mb-4">
+        <img src="/assets/logo.png" alt="HEAVY STORE TOP UP" class="logo mb-3">
+        <h1 class="h5 fw-bold mb-1">Admin Panel</h1>
+        <p class="text-muted-2 small mb-0">HEAVY STORE TOP UP — Control Center</p>
+      </div>
+
+      <div id="authError" class="alert alert-danger d-none" role="alert"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="mb-3">
+          <label for="identifier" class="form-label">Email / Username Admin</label>
+          <div class="input-group">
+            <span class="input-group-text bg-transparent border-secondary-subtle"><i class="bi bi-person-badge"></i></span>
+            <input type="text" class="form-control" id="identifier" autocomplete="username" placeholder="admin@heavyystore.topup.id" required>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-transparent border-secondary-subtle"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control" id="password" autocomplete="current-password" placeholder="••••••••" required>
+            <button class="btn btn-outline-secondary" type="button" id="togglePw" tabindex="-1"><i class="bi bi-eye"></i></button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-hvy w-100 btn-lg" id="btnSubmit">
+          <i class="bi bi-shield-lock me-2"></i>Masuk ke Panel
+        </button>
+      </form>
+
+      <div class="divider-silver my-4"></div>
+      <p class="text-center small text-muted-2 mb-0">
+        <i class="bi bi-lock-fill me-1"></i>Akses terbatas. Seluruh aktivitas dicatat pada audit log.
+      </p>
+    </div>
+  </div>
+
+  <!-- First-time bootstrap (only works while no admin exists) -->
+  <div class="text-center mt-3">
+    <button class="btn btn-link btn-sm text-muted-2" data-bs-toggle="modal" data-bs-target="#bootstrapModal">
+      Setup admin pertama kali
+    </button>
+  </div>
+
+  <div class="modal fade" id="bootstrapModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-magic me-2"></i>Bootstrap Admin</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="bsError" class="alert alert-danger d-none" role="alert"></div>
+          <div class="alert alert-warning small">
+            <i class="bi bi-info-circle me-1"></i>Hanya berfungsi saat <strong>belum ada admin</strong>. Membutuhkan <span class="mono">ADMIN_SECRET</span> dari environment server.
+          </div>
+          <form id="bootstrapForm">
+            <div class="mb-3">
+              <label class="form-label">ADMIN_SECRET</label>
+              <input type="password" class="form-control" id="bsSecret" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-control" id="bsUsername" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" id="bsEmail" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password <span class="text-muted-2 small">(min. 10 karakter)</span></label>
+              <input type="password" class="form-control" id="bsPassword" required>
+            </div>
+            <button type="submit" class="btn btn-hvy w-100" id="bsSubmit"><i class="bi bi-check2-circle me-1"></i>Buat Admin</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const api = HVY.api;
+      const el = (id) => document.getElementById(id);
+      function nextUrl() {
+        const n = HVY.param('next');
+        return (n && /^\/admin\//.test(n)) ? n : '/admin/dashboard.html';
+      }
+      function showErr(id, msg) {
+        const b = el(id);
+        if (!msg) { b.classList.add('d-none'); return; }
+        b.classList.remove('d-none'); b.textContent = msg;
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        // Already logged in? go to dashboard.
+        try { await api.admin.me(); location.href = nextUrl(); return; } catch (_) {}
+
+        el('togglePw').addEventListener('click', function () {
+          const pw = el('password');
+          const show = pw.type === 'password';
+          pw.type = show ? 'text' : 'password';
+          this.innerHTML = '<i class="bi bi-eye' + (show ? '-slash' : '') + '"></i>';
+        });
+
+        el('loginForm').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          showErr('authError', '');
+          const identifier = el('identifier').value.trim();
+          const password = el('password').value;
+          if (!identifier || !password) { showErr('authError', 'Lengkapi kredensial'); return; }
+          const btn = el('btnSubmit');
+          HVY.setLoading(btn, true);
+          try {
+            await api.admin.login(identifier, password);
+            HVY.toast('Login admin berhasil', 'success');
+            setTimeout(() => { location.href = nextUrl(); }, 400);
+          } catch (err) {
+            showErr('authError', err.message || 'Gagal login');
+            HVY.setLoading(btn, false);
+          }
+        });
+
+        el('bootstrapForm').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          showErr('bsError', '');
+          const btn = el('bsSubmit');
+          HVY.setLoading(btn, true);
+          try {
+            await api.admin.bootstrap({
+              admin_secret: el('bsSecret').value,
+              username: el('bsUsername').value.trim(),
+              email: el('bsEmail').value.trim(),
+              password: el('bsPassword').value,
+            });
+            HVY.toast('Admin pertama dibuat. Silakan login.', 'success');
+            bootstrap.Modal.getInstance(el('bootstrapModal')).hide();
+          } catch (err) {
+            showErr('bsError', err.message || 'Gagal bootstrap');
+          } finally {
+            HVY.setLoading(btn, false);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
