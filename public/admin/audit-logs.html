@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Audit Log — Admin HEAVY STORE TOP UP</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="admin-main">
+      <header class="admin-topbar" id="adminTopbar"></header>
+      <main class="admin-content">
+        <div class="admin-toolbar mb-3">
+          <select class="form-select" id="fActor">
+            <option value="">Semua Aktor</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+            <option value="system">System</option>
+          </select>
+          <input class="form-control" id="fAction" placeholder="Cari aksi (mis. order.)">
+          <button class="btn btn-hvy" id="btnApply"><i class="bi bi-funnel me-1"></i>Terapkan</button>
+          <div class="spacer"></div>
+          <span class="pill"><i class="bi bi-list-check me-1"></i>Total: <span id="mTotal" class="ms-1">0</span></span>
+        </div>
+
+        <div class="hvy-card p-0">
+          <div class="hvy-table-wrap">
+            <table class="hvy-table">
+              <thead><tr><th>Waktu</th><th>Aktor</th><th>Aksi</th><th>Entitas</th><th>Detail</th><th>IP</th></tr></thead>
+              <tbody id="tbody"><tr><td colspan="6" class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pagination-hvy" id="pager"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/admin/js/admin-common.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const el = (id) => document.getElementById(id);
+      const LIMIT = 30;
+      let offset = 0;
+
+      const ACTOR_CLS = { admin: 'st-success', user: 'st-processing', system: 'st-pending' };
+
+      function detailText(d) {
+        if (!d) return '<span class="text-muted-2">—</span>';
+        let s;
+        try { s = typeof d === 'string' ? d : JSON.stringify(d); } catch (_) { s = String(d); }
+        if (s.length > 90) s = s.slice(0, 90) + '…';
+        return '<span class="mono small">' + HVY.escapeHtml(s) + '</span>';
+      }
+
+      function render(rows) {
+        el('tbody').innerHTML = rows.length ? rows.map(function (l) {
+          return '<tr>' +
+            '<td class="small text-muted-2 text-nowrap">' + HVY.fmtDate(l.created_at) + '</td>' +
+            '<td><span class="badge-status ' + (ACTOR_CLS[l.actor_type] || 'st-pending') + '">' + HVY.escapeHtml(l.actor_type) + '</span>' + (l.actor_id ? '<div class="text-muted-2 small">#' + HVY.escapeHtml(l.actor_id) + '</div>' : '') + '</td>' +
+            '<td class="mono small fw-semibold">' + HVY.escapeHtml(l.action) + '</td>' +
+            '<td>' + (l.entity ? HVY.escapeHtml(l.entity) : '—') + (l.entity_id ? ' <span class="text-muted-2 small">#' + HVY.escapeHtml(l.entity_id) + '</span>' : '') + '</td>' +
+            '<td>' + detailText(l.details) + '</td>' +
+            '<td class="small text-muted-2 mono">' + HVY.escapeHtml(l.ip || '—') + '</td>' +
+          '</tr>';
+        }).join('') : '<tr><td colspan="6" class="text-center text-muted-2 py-4">Belum ada log</td></tr>';
+      }
+
+      async function load() {
+        const query = { limit: LIMIT, offset };
+        if (el('fActor').value) query.actor_type = el('fActor').value;
+        if (el('fAction').value.trim()) query.action = el('fAction').value.trim();
+        try {
+          const res = await ADMIN.api.auditLogs(query);
+          el('mTotal').textContent = res.total || 0;
+          render(res.logs || []);
+          ADMIN.renderPagination('pager', { total: res.total || 0, limit: LIMIT, offset, onChange: (o) => { offset = o; load(); } });
+        } catch (err) {
+          el('tbody').innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">' + HVY.escapeHtml(err.message) + '</td></tr>';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        const adm = await ADMIN.mountShell('audit');
+        if (!adm) return;
+        el('btnApply').addEventListener('click', function () { offset = 0; load(); });
+        el('fAction').addEventListener('keydown', function (e) { if (e.key === 'Enter') { offset = 0; load(); } });
+        load();
+      });
+    })();
+  </script>
+</body>
+</html>

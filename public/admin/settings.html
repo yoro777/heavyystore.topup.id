@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pengaturan — Admin HEAVY STORE TOP UP</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="admin-main">
+      <header class="admin-topbar" id="adminTopbar"></header>
+      <main class="admin-content">
+        <div class="admin-toolbar mb-3">
+          <div class="spacer"></div>
+          <button class="btn btn-hvy-ghost" id="btnReload"><i class="bi bi-arrow-clockwise me-1"></i>Muat Ulang</button>
+          <button class="btn btn-hvy" id="btnSave"><i class="bi bi-check2 me-1"></i>Simpan Perubahan</button>
+        </div>
+
+        <div id="settingsWrap">
+          <div class="text-center py-5"><div class="spinner-border text-secondary"></div></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/admin/js/admin-common.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const el = (id) => document.getElementById(id);
+      let SETTINGS = [];
+
+      const GROUPS = [
+        { title: 'Umum', icon: 'bi-globe2', keys: ['site_name', 'site_tagline', 'site_description', 'currency', 'timezone'] },
+        { title: 'Kontak', icon: 'bi-telephone', keys: ['contact_email', 'contact_whatsapp'] },
+        { title: 'Tampilan & Banner', icon: 'bi-megaphone', keys: ['announcement', 'promo_banner_title', 'promo_banner_subtitle', 'promo_banner_enabled'] },
+        { title: 'Operasional', icon: 'bi-sliders', keys: ['maintenance_mode', 'maintenance_message', 'registration_enabled', 'referral_enabled', 'order_expiry_minutes'] },
+        { title: 'Harga & Margin', icon: 'bi-cash-stack', keys: ['default_margin_type', 'default_margin_value', 'min_margin_percent'] },
+        { title: 'Notifikasi', icon: 'bi-bell', keys: ['notification_email_enabled', 'notification_whatsapp_enabled'] },
+      ];
+
+      const TEXTAREA = ['site_description', 'maintenance_message', 'announcement'];
+
+      function fieldHtml(s) {
+        const id = 'set_' + s.key;
+        const desc = s.description ? '<div class="form-text text-muted-2">' + HVY.escapeHtml(s.description) + '</div>' : '';
+        let control = '';
+
+        if (s.type === 'boolean') {
+          control = '<div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' + id + '" data-key="' + s.key + '" data-type="boolean"' + (s.value === true ? ' checked' : '') + '></div>';
+        } else if (s.type === 'number') {
+          control = '<input type="number" class="form-control" id="' + id + '" data-key="' + s.key + '" data-type="number" value="' + HVY.escapeHtml(s.value === null || s.value === undefined ? '' : s.value) + '">';
+        } else if (TEXTAREA.indexOf(s.key) !== -1) {
+          control = '<textarea class="form-control" id="' + id + '" data-key="' + s.key + '" data-type="string" rows="2">' + HVY.escapeHtml(s.value || '') + '</textarea>';
+        } else {
+          control = '<input type="text" class="form-control" id="' + id + '" data-key="' + s.key + '" data-type="string" value="' + HVY.escapeHtml(s.value === null || s.value === undefined ? '' : s.value) + '">';
+        }
+
+        return '<div class="col-md-6"><label class="form-label" for="' + id + '">' + HVY.escapeHtml(s.key) + ' <span class="text-muted-2 small">(' + HVY.escapeHtml(s.type) + ')</span></label>' + control + desc + '</div>';
+      }
+
+      function render() {
+        const byKey = {};
+        SETTINGS.forEach((s) => { byKey[s.key] = s; });
+        const used = {};
+
+        let html = '';
+        GROUPS.forEach(function (g) {
+          const items = g.keys.map((k) => byKey[k]).filter(Boolean);
+          if (!items.length) return;
+          items.forEach((s) => { used[s.key] = true; });
+          html += '<div class="hvy-card p-3 p-md-4 mb-3">' +
+            '<h6 class="fw-bold mb-3"><i class="bi ' + g.icon + ' me-2 silver-text"></i>' + g.title + '</h6>' +
+            '<div class="row g-3">' + items.map(fieldHtml).join('') + '</div>' +
+          '</div>';
+        });
+
+        const rest = SETTINGS.filter((s) => !used[s.key]);
+        if (rest.length) {
+          html += '<div class="hvy-card p-3 p-md-4 mb-3">' +
+            '<h6 class="fw-bold mb-3"><i class="bi bi-three-dots me-2 silver-text"></i>Lainnya</h6>' +
+            '<div class="row g-3">' + rest.map(fieldHtml).join('') + '</div>' +
+          '</div>';
+        }
+
+        el('settingsWrap').innerHTML = html || '<div class="empty-state"><i class="bi bi-inbox"></i><p class="mt-2">Tidak ada pengaturan</p></div>';
+      }
+
+      function collect() {
+        const out = {};
+        el('settingsWrap').querySelectorAll('[data-key]').forEach(function (input) {
+          const key = input.dataset.key;
+          const type = input.dataset.type;
+          if (type === 'boolean') out[key] = input.checked;
+          else if (type === 'number') out[key] = input.value === '' ? 0 : Number(input.value);
+          else out[key] = input.value;
+        });
+        return out;
+      }
+
+      async function load() {
+        try {
+          const res = await ADMIN.api.settings();
+          SETTINGS = res.settings || [];
+          render();
+        } catch (err) {
+          el('settingsWrap').innerHTML = '<div class="alert alert-danger">' + HVY.escapeHtml(err.message) + '</div>';
+        }
+      }
+
+      async function save() {
+        const btn = el('btnSave');
+        HVY.setLoading(btn, true);
+        try {
+          await ADMIN.api.saveSettings(collect());
+          HVY.toast('Pengaturan disimpan', 'success');
+          await load();
+        } catch (err) {
+          HVY.toast(err.message, 'danger');
+        } finally { HVY.setLoading(btn, false); }
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        const adm = await ADMIN.mountShell('settings');
+        if (!adm) return;
+        el('btnSave').addEventListener('click', save);
+        el('btnReload').addEventListener('click', load);
+        load();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Transaksi — Admin HEAVY STORE TOP UP</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="admin-main">
+      <header class="admin-topbar" id="adminTopbar"></header>
+      <main class="admin-content">
+        <div class="row g-3 mb-3">
+          <div class="col-6 col-lg-3"><div class="stat-card hvy-card"><div class="label">Total Data</div><div class="value" id="mTotal">0</div></div></div>
+          <div class="col-6 col-lg-3"><div class="stat-card hvy-card"><div class="label">Revenue (filter)</div><div class="value silver-text" id="mRevenue">Rp0</div></div></div>
+          <div class="col-6 col-lg-3"><div class="stat-card hvy-card"><div class="label">Profit (filter)</div><div class="value" id="mProfit">Rp0</div></div></div>
+          <div class="col-6 col-lg-3"><div class="stat-card hvy-card"><div class="label">Halaman</div><div class="value" id="mPage">1</div></div></div>
+        </div>
+
+        <div class="hvy-card p-3 mb-3">
+          <div class="admin-toolbar">
+            <input type="search" class="form-control" id="fSearch" placeholder="Cari Order ID / User ID / produk / customer">
+            <select class="form-select" id="fRange">
+              <option value="all">Semua waktu</option>
+              <option value="today">Hari ini</option>
+              <option value="week">7 hari</option>
+              <option value="month">30 hari</option>
+            </select>
+            <select class="form-select" id="fStatus">
+              <option value="all">Semua status</option>
+              <option value="success">Sukses</option>
+              <option value="pending">Pending/Proses</option>
+              <option value="paid">Sudah dibayar</option>
+              <option value="failed">Gagal/Expired</option>
+              <option value="refunded">Refund</option>
+            </select>
+            <div class="spacer"></div>
+            <button class="btn btn-hvy-outline btn-sm" id="btnExport"><i class="bi bi-download me-1"></i>CSV</button>
+            <button class="btn btn-hvy btn-sm" id="btnApply"><i class="bi bi-funnel me-1"></i>Terapkan</button>
+          </div>
+        </div>
+
+        <div class="hvy-card p-0">
+          <div class="hvy-table-wrap">
+            <table class="hvy-table">
+              <thead>
+                <tr>
+                  <th>Order</th><th>Game / Produk</th><th>Customer</th><th>Metode</th>
+                  <th>Total</th><th>Profit</th><th>Status</th><th>Waktu</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr><td colspan="9" class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-hvy pb-3" id="pager"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Detail modal -->
+  <div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Detail Transaksi</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="detailBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/admin/js/admin-common.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const el = (id) => document.getElementById(id);
+      const LIMIT = 25;
+      let offset = 0;
+      let lastRows = [];
+
+      function q() {
+        return {
+          limit: LIMIT, offset,
+          search: el('fSearch').value.trim() || undefined,
+          range: el('fRange').value,
+          status: el('fStatus').value,
+        };
+      }
+
+      function rowHtml(t) {
+        const profit = Number(t.total_price) - Number(t.supplier_cost);
+        return '<tr>' +
+          '<td class="mono">' + HVY.escapeHtml(t.order_id) + '</td>' +
+          '<td><div class="fw-semibold">' + HVY.escapeHtml(t.game_name || '-') + '</div><div class="text-muted-2 small">' + HVY.escapeHtml(t.product_name || '-') + '</div></td>' +
+          '<td>' + HVY.escapeHtml(t.customer_username || 'Guest') + '<div class="text-muted-2 small">' + HVY.escapeHtml(t.customer_email || '') + '</div></td>' +
+          '<td>' + HVY.escapeHtml(t.payment_method || '-') + '<div class="text-muted-2 small">' + HVY.escapeHtml(t.payment_provider || '') + '</div></td>' +
+          '<td class="fw-bold">' + HVY.fmt(t.grand_total) + '</td>' +
+          '<td class="' + (profit >= 0 ? 'text-success' : 'text-danger') + '">' + HVY.fmt(profit) + '</td>' +
+          '<td>' + ADMIN.topupBadge(t.status) + '</td>' +
+          '<td class="text-muted-2 small">' + HVY.fmtDate(t.created_at) + '</td>' +
+          '<td><button class="btn btn-hvy-ghost btn-sm" data-id="' + t.id + '"><i class="bi bi-eye"></i></button></td>' +
+        '</tr>';
+      }
+
+      function render(res) {
+        lastRows = res.transactions || [];
+        el('mTotal').textContent = res.total;
+        el('mRevenue').textContent = HVY.fmt(res.summary ? res.summary.revenue : 0);
+        el('mProfit').textContent = HVY.fmt(res.summary ? res.summary.profit : 0);
+        el('mPage').textContent = Math.floor(offset / LIMIT) + 1;
+        el('tbody').innerHTML = lastRows.length
+          ? lastRows.map(rowHtml).join('')
+          : '<tr><td colspan="9" class="text-center text-muted-2 py-4">Tidak ada transaksi</td></tr>';
+        ADMIN.renderPagination('pager', { total: res.total, limit: LIMIT, offset, onChange: (o) => { offset = o; load(); } });
+        el('tbody').querySelectorAll('button[data-id]').forEach(function (b) {
+          b.addEventListener('click', () => openDetail(Number(b.dataset.id)));
+        });
+      }
+
+      function kv(k, v) { return '<div class="kv"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>'; }
+
+      function openDetail(id) {
+        const t = lastRows.find((r) => r.id === id);
+        if (!t) return;
+        const profit = Number(t.total_price) - Number(t.supplier_cost);
+        el('detailBody').innerHTML =
+          '<div class="d-flex justify-content-between align-items-center mb-3">' +
+            '<span class="mono fw-bold">' + HVY.escapeHtml(t.order_id) + '</span>' + ADMIN.topupBadge(t.status) +
+          '</div>' +
+          '<div class="row g-3">' +
+            '<div class="col-md-6"><h6 class="text-muted-2 small text-uppercase">Pesanan</h6>' +
+              kv('Game', HVY.escapeHtml(t.game_name || '-')) +
+              kv('Produk', HVY.escapeHtml(t.product_name || '-')) +
+              kv('User ID', '<span class="mono">' + HVY.escapeHtml(t.game_user_id || '-') + '</span>') +
+              (t.game_server_id ? kv('Server ID', '<span class="mono">' + HVY.escapeHtml(t.game_server_id) + '</span>') : '') +
+              kv('Referral', HVY.escapeHtml(t.referral_code || '-')) +
+              kv('Supplier', HVY.escapeHtml(t.supplier_name || '-')) +
+              kv('Supplier Ref', HVY.escapeHtml(t.supplier_reference || '-')) +
+            '</div>' +
+            '<div class="col-md-6"><h6 class="text-muted-2 small text-uppercase">Pembayaran</h6>' +
+              kv('Metode', HVY.escapeHtml(t.payment_method || '-')) +
+              kv('Provider', HVY.escapeHtml(t.payment_provider || '-')) +
+              kv('Payment status', HVY.escapeHtml(t.payment_status || '-')) +
+              kv('Topup status', HVY.escapeHtml(t.topup_status || '-')) +
+              kv('Harga dasar', HVY.fmt(t.base_price)) +
+              kv('Diskon', HVY.fmt(t.discount_total)) +
+              kv('Biaya admin', HVY.fmt(t.payment_fee)) +
+              kv('Total bayar', '<span class="silver-text fw-bold">' + HVY.fmt(t.grand_total) + '</span>') +
+            '</div>' +
+            '<div class="col-12"><h6 class="text-muted-2 small text-uppercase">Margin Internal</h6>' +
+              '<div class="row g-3">' +
+                '<div class="col-md-4">' + kv('Harga supplier', HVY.fmt(t.supplier_cost)) + '</div>' +
+                '<div class="col-md-4">' + kv('Harga jual', HVY.fmt(t.total_price)) + '</div>' +
+                '<div class="col-md-4">' + kv('Profit', '<span class="' + (profit >= 0 ? 'text-success' : 'text-danger') + ' fw-bold">' + HVY.fmt(profit) + '</span>') + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="col-12"><h6 class="text-muted-2 small text-uppercase">Customer</h6>' +
+              kv('Username', HVY.escapeHtml(t.customer_username || 'Guest')) +
+              kv('Email', HVY.escapeHtml(t.customer_email || '-')) +
+              kv('Telepon', HVY.escapeHtml(t.customer_phone || '-')) +
+              kv('Dibuat', HVY.fmtDate(t.created_at)) +
+              kv('Dibayar', t.paid_at ? HVY.fmtDate(t.paid_at) : '-') +
+              kv('Selesai', t.completed_at ? HVY.fmtDate(t.completed_at) : '-') +
+            '</div>' +
+          '</div>';
+        ADMIN.showModal('detailModal');
+      }
+
+      async function load() {
+        el('tbody').innerHTML = '<tr><td colspan="9" class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary"></div></td></tr>';
+        try {
+          const res = await ADMIN.api.transactions(q());
+          render(res);
+        } catch (err) {
+          el('tbody').innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">' + HVY.escapeHtml(err.message) + '</td></tr>';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        const adm = await ADMIN.mountShell('transactions');
+        if (!adm) return;
+        el('btnApply').addEventListener('click', () => { offset = 0; load(); });
+        el('fSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') { offset = 0; load(); } });
+        el('fRange').addEventListener('change', () => { offset = 0; load(); });
+        el('fStatus').addEventListener('change', () => { offset = 0; load(); });
+        el('btnExport').addEventListener('click', function () {
+          if (!lastRows.length) { HVY.toast('Tidak ada data untuk diekspor', 'warning'); return; }
+          ADMIN.downloadCsv('transaksi-' + Date.now() + '.csv', lastRows, [
+            { label: 'Order ID', value: 'order_id' },
+            { label: 'Game', value: 'game_name' },
+            { label: 'Produk', value: 'product_name' },
+            { label: 'User ID', value: 'game_user_id' },
+            { label: 'Customer', value: 'customer_username' },
+            { label: 'Metode', value: 'payment_method' },
+            { label: 'Total', value: 'grand_total' },
+            { label: 'Status', value: 'status' },
+            { label: 'Waktu', value: (r) => new Date(r.created_at).toISOString() },
+          ]);
+        });
+        load();
+      });
+    })();
+  </script>
+</body>
+</html>

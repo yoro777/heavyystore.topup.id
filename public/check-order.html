@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cek Pesanan — HEAVY STORE TOP UP</title>
+  <meta name="description" content="Cek status pesanan top up game kamu di HEAVY STORE TOP UP. Masukkan Order ID untuk melihat status pembayaran dan pengiriman.">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/assets/favicon-180.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div id="site-nav"></div>
+
+  <main id="main" class="container py-4 py-lg-5">
+    <div class="text-center mb-4">
+      <span class="eyebrow">LACAK PESANAN</span>
+      <h1 class="section-title h3 mb-1">Cek Pesanan</h1>
+      <p class="text-muted-2 mb-0">Masukkan Order ID yang kamu terima setelah melakukan pemesanan.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <div class="hvy-card p-4 p-lg-4">
+          <form id="form" novalidate>
+            <label for="orderId" class="form-label">Order ID</label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text bg-transparent border-secondary-subtle"><i class="bi bi-upc-scan"></i></span>
+              <input type="text" class="form-control mono" id="orderId" name="orderId"
+                     placeholder="HVY-20260101-ABC123" autocomplete="off" spellcheck="false" required>
+              <button class="btn btn-hvy px-4" id="btnCheck" type="submit">
+                <i class="bi bi-search me-1"></i>Cek
+              </button>
+            </div>
+            <div class="form-text mt-2">Contoh format: <span class="mono">HVY-20260101-ABC123</span></div>
+          </form>
+
+          <div class="divider-silver my-4"></div>
+
+          <div class="d-flex flex-wrap gap-3 small text-muted-2">
+            <span><i class="bi bi-shield-check me-1 text-success"></i>Status diverifikasi ke server</span>
+            <span><i class="bi bi-clock-history me-1"></i>Riwayat lengkap di halaman detail</span>
+          </div>
+        </div>
+
+        <div id="result" class="mt-4 d-none"></div>
+
+        <div class="hvy-card p-3 mt-4 text-center">
+          <div class="small text-muted-2 mb-2">Belum punya akun? Simpan semua transaksimu di satu tempat.</div>
+          <a href="/register.html" class="btn btn-hvy-outline btn-sm"><i class="bi bi-person-plus me-1"></i>Daftar Gratis</a>
+          <a href="/topup.html" class="btn btn-hvy-ghost btn-sm"><i class="bi bi-lightning-charge me-1"></i>Top Up Sekarang</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+  <nav id="bottom-nav"></nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/check-order.js"></script>
+</body>
+</html>

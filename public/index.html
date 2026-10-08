@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>HEAVY STORE TOP UP — Top Up Game Cepat, Aman & Otomatis</title>
+  <meta name="description" content="HEAVY STORE TOP UP — platform top up game otomatis, aman, dan terpercaya di Indonesia. Free Fire, Mobile Legends, PUBG, Valorant, Genshin Impact, dan 20+ game lainnya.">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/assets/favicon-180.png">
+  <meta property="og:title" content="HEAVY STORE TOP UP">
+  <meta property="og:description" content="Top Up Game Cepat, Aman & Otomatis">
+  <meta property="og:image" content="/assets/logo.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div id="site-nav"></div>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container py-5">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-7">
+            <span class="eyebrow mb-3"><i class="bi bi-shield-check me-1"></i> Otomatis • Aman • Terpercaya</span>
+            <h1 class="display-4 mb-3">HEAVY STORE <span class="silver-text">TOP UP</span></h1>
+            <p class="fs-5 text-muted-2 mb-4" style="max-width:560px">Top Up Game Cepat, Aman &amp; Otomatis. Proses instan 24 jam, harga bersaing, dan pembayaran resmi via QRIS, e-wallet, dan virtual account.</p>
+            <div class="d-flex flex-wrap gap-3">
+              <a href="/topup.html" class="btn btn-hvy btn-lg px-4"><i class="bi bi-lightning-charge-fill me-2"></i>TOP UP SEKARANG</a>
+              <a href="/check-order.html" class="btn btn-hvy-outline btn-lg px-4"><i class="bi bi-search me-2"></i>CEK PESANAN</a>
+            </div>
+            <div class="d-flex flex-wrap gap-4 mt-4 text-muted-2">
+              <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Proses Instan</span>
+              <span><i class="bi bi-lock-fill text-success me-1"></i> Pembayaran Resmi</span>
+              <span><i class="bi bi-headset me-1"></i> Support 24/7</span>
+            </div>
+          </div>
+          <div class="col-lg-5 text-center">
+            <img class="hero-logo" src="/assets/logo.png" alt="HEAVY STORE TOP UP" style="max-width:420px;width:100%">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROMO BANNER -->
+    <section class="container">
+      <div class="promo-banner mb-4">
+        <div class="row align-items-center g-3">
+          <div class="col-md-8">
+            <span class="eyebrow"><i class="bi bi-tags-fill me-1"></i> PROMO SPESIAL</span>
+            <h3 class="fw-bold mt-2 mb-1">Diskon hingga 10% untuk semua top up!</h3>
+            <p class="mb-0 text-muted-2">Gunakan kode <strong class="silver-text">HEAVY10</strong> dan hemat maksimal Rp10.000 setiap transaksi.</p>
+          </div>
+          <div class="col-md-4 text-md-end">
+            <a href="/promo.html" class="btn btn-hvy px-4">Lihat Promo <i class="bi bi-arrow-right ms-1"></i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAMES -->
+    <section class="container py-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+        <div>
+          <span class="eyebrow">KATALOG</span>
+          <h2 class="section-title mb-0">Pilih Game Favoritmu</h2>
+        </div>
+        <div class="d-flex gap-2">
+          <div class="input-group" style="max-width:280px">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input id="gameSearch" type="search" class="form-control" placeholder="Cari game...">
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mb-3" id="categoryFilter">
+        <button class="btn btn-hvy-outline btn-sm active" data-cat="all">Semua</button>
+        <button class="btn btn-hvy-outline btn-sm" data-cat="mobile">Mobile</button>
+        <button class="btn btn-hvy-outline btn-sm" data-cat="pc">PC</button>
+        <button class="btn btn-hvy-outline btn-sm" data-cat="voucher">Voucher</button>
+      </div>
+
+      <div class="row g-3" id="gameGrid">
+        <div class="col-6 col-md-4 col-lg-3"><div class="hvy-card skeleton" style="height:180px"></div></div>
+        <div class="col-6 col-md-4 col-lg-3"><div class="hvy-card skeleton" style="height:180px"></div></div>
+        <div class="col-6 col-md-4 col-lg-3"><div class="hvy-card skeleton" style="height:180px"></div></div>
+        <div class="col-6 col-md-4 col-lg-3"><div class="hvy-card skeleton" style="height:180px"></div></div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="container py-4">
+      <div class="row g-3">
+        <div class="col-md-4"><div class="hvy-card p-4 h-100">
+          <div class="fs-2 mb-2"><i class="bi bi-lightning-charge-fill silver-text"></i></div>
+          <h5 class="fw-bold">Proses Otomatis</h5>
+          <p class="text-muted-2 mb-0">Setelah pembayaran terverifikasi, top up diproses otomatis ke supplier dalam hitungan detik.</p>
+        </div></div>
+        <div class="col-md-4"><div class="hvy-card p-4 h-100">
+          <div class="fs-2 mb-2"><i class="bi bi-shield-lock-fill silver-text"></i></div>
+          <h5 class="fw-bold">Aman &amp; Resmi</h5>
+          <p class="text-muted-2 mb-0">Pembayaran melalui payment gateway resmi dengan verifikasi tanda tangan webhook.</p>
+        </div></div>
+        <div class="col-md-4"><div class="hvy-card p-4 h-100">
+          <div class="fs-2 mb-2"><i class="bi bi-piggy-bank-fill silver-text"></i></div>
+          <h5 class="fw-bold">Harga Bersaing</h5>
+          <p class="text-muted-2 mb-0">Harga dinamis yang selalu kompetitif, plus promo &amp; kode referral untuk hemat lebih banyak.</p>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="container py-4">
+      <div class="text-center mb-4">
+        <span class="eyebrow">CARA KERJA</span>
+        <h2 class="section-title">Top Up dalam 3 Langkah</h2>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-4"><div class="hvy-card p-4 h-100 text-center">
+          <div class="step-dot active mx-auto mb-3">1</div>
+          <h6 class="fw-bold">Pilih Game &amp; Nominal</h6>
+          <p class="text-muted-2 mb-0 small">Cari game, masukkan User ID, lalu pilih nominal top up.</p>
+        </div></div>
+        <div class="col-md-4"><div class="hvy-card p-4 h-100 text-center">
+          <div class="step-dot active mx-auto mb-3">2</div>
+          <h6 class="fw-bold">Pilih Pembayaran</h6>
+          <p class="text-muted-2 mb-0 small">Bayar via QRIS, DANA, OVO, GoPay, atau Virtual Account bank.</p>
+        </div></div>
+        <div class="col-md-4"><div class="hvy-card p-4 h-100 text-center">
+          <div class="step-dot active mx-auto mb-3">3</div>
+          <h6 class="fw-bold">Terima Top Up</h6>
+          <p class="text-muted-2 mb-0 small">Pesanan diproses otomatis dan saldo masuk ke akun game kamu.</p>
+        </div></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <nav id="bottom-nav"></nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    (async function () {
+      await HVY.mountChrome('home');
+      const grid = document.getElementById('gameGrid');
+      let games = [];
+      let activeCat = 'all';
+      let search = '';
+
+      function render() {
+        const filtered = games.filter((g) => {
+          const okCat = activeCat === 'all' || g.category === activeCat;
+          const okSearch = !search || g.name.toLowerCase().includes(search.toLowerCase());
+          return okCat && okSearch;
+        });
+        if (!filtered.length) {
+          grid.innerHTML = '<div class="col-12"><div class="empty-state"><i class="bi bi-search"></i><p class="mt-2 mb-0">Game tidak ditemukan.</p></div></div>';
+          return;
+        }
+        grid.innerHTML = filtered.map((g) => (
+          '<div class="col-6 col-md-4 col-lg-3">' +
+            '<a href="/topup.html?game=' + encodeURIComponent(g.slug) + '" class="game-card hvy-card hvy-card-lift d-block h-100 text-decoration-none">' +
+              (g.is_maintenance ? '<span class="ribbon">Maintenance</span>' : '') +
+              '<div class="thumb"><img src="' + HVY.escapeHtml(g.logo_url || '/assets/logo.png') + '" alt="' + HVY.escapeHtml(g.name) + '" loading="lazy"></div>' +
+              '<div class="name">' + HVY.escapeHtml(g.name) + '</div>' +
+              '<div class="min">' + (g.min_price ? 'Mulai ' + HVY.fmt(g.min_price) : 'Segera hadir') + '</div>' +
+            '</a>' +
+          '</div>'
+        )).join('');
+      }
+
+      try {
+        const res = await HVY.api.games();
+        games = res.games || [];
+        render();
+      } catch (err) {
+        grid.innerHTML = '<div class="col-12"><div class="empty-state"><i class="bi bi-wifi-off"></i><p class="mt-2 mb-0">' + HVY.escapeHtml(err.message) + '</p></div></div>';
+      }
+
+      document.getElementById('gameSearch').addEventListener('input', HVY.debounce(function (e) {
+        search = e.target.value; render();
+      }, 200));
+
+      document.getElementById('categoryFilter').addEventListener('click', function (e) {
+        const btn = e.target.closest('button[data-cat]');
+        if (!btn) return;
+        HVY.qsa('#categoryFilter button').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCat = btn.dataset.cat;
+        render();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Payment Gateway — Admin HEAVY STORE TOP UP</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#08090b">
+  <link rel="icon" href="/assets/favicon-32.png" sizes="32x32">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="admin-main">
+      <header class="admin-topbar" id="adminTopbar"></header>
+      <main class="admin-content">
+        <div class="hvy-card p-3 p-md-4 mb-3">
+          <div class="d-flex align-items-start gap-3">
+            <i class="bi bi-shield-lock-fill fs-3 silver-text"></i>
+            <div>
+              <h6 class="fw-bold mb-1">Kredensial Gateway Bersifat Server-Side</h6>
+              <p class="text-muted-2 mb-0 small">Semua kunci pembayaran (Midtrans / DANA) disimpan terenkripsi di server melalui variabel lingkungan <span class="mono">.env</span> dan tidak pernah dikirim ke browser. Halaman ini hanya mengelola daftar <strong>metode pembayaran</strong> yang ditampilkan ke pelanggan.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-toolbar mb-3">
+          <div class="spacer"></div>
+          <button class="btn btn-hvy" id="btnAdd"><i class="bi bi-plus-lg me-1"></i>Tambah Metode</button>
+        </div>
+
+        <div class="hvy-card p-0">
+          <div class="hvy-table-wrap">
+            <table class="hvy-table">
+              <thead><tr><th>Metode</th><th>Tipe</th><th>Provider</th><th>Biaya</th><th>Min / Maks</th><th>Status</th><th></th></tr></thead>
+              <tbody id="tbody"><tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="modalTitle">Tambah Metode Pembayaran</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div id="formError" class="alert alert-danger d-none"></div>
+          <form id="pmForm">
+            <input type="hidden" id="pId">
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label">Kode *</label><input class="form-control mono text-lowercase" id="pCode" placeholder="qris" required></div>
+              <div class="col-md-6"><label class="form-label">Nama *</label><input class="form-control" id="pName" placeholder="QRIS" required></div>
+              <div class="col-md-6"><label class="form-label">Tipe *</label>
+                <select class="form-select" id="pType">
+                  <option value="ewallet">E-Wallet</option>
+                  <option value="bank_transfer">Transfer Bank</option>
+                  <option value="qris">QRIS</option>
+                  <option value="retail">Retail (Alfamart/Indomaret)</option>
+                  <option value="other">Lainnya</option>
+                </select>
+              </div>
+              <div class="col-md-6"><label class="form-label">Provider</label>
+                <select class="form-select" id="pProvider">
+                  <option value="midtrans">Midtrans</option>
+                  <option value="dana">DANA</option>
+                  <option value="manual">Manual</option>
+                </select>
+              </div>
+              <div class="col-12"><label class="form-label">Logo URL</label><input class="form-control" id="pLogo" placeholder="/assets/payments/qris.svg"></div>
+              <div class="col-md-6"><label class="form-label">Biaya Tetap (Rp)</label><input type="number" class="form-control" id="pFeeFlat" value="0" min="0"></div>
+              <div class="col-md-6"><label class="form-label">Biaya Persen (%)</label><input type="number" class="form-control" id="pFeePct" value="0" min="0" step="0.01"></div>
+              <div class="col-md-6"><label class="form-label">Min. Transaksi (Rp)</label><input type="number" class="form-control" id="pMin" value="0" min="0"></div>
+              <div class="col-md-6"><label class="form-label">Maks. Transaksi (Rp) <span class="text-muted-2 small">0=tanpa batas</span></label><input type="number" class="form-control" id="pMax" value="0" min="0"></div>
+              <div class="col-12"><label class="form-label">Instruksi Pembayaran</label><textarea class="form-control" id="pInstr" rows="2" placeholder="Cara pembayaran..."></textarea></div>
+              <div class="col-md-6"><label class="form-label">Urutan</label><input type="number" class="form-control" id="pSort" value="0"></div>
+              <div class="col-md-6 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="pActive" checked><label class="form-check-label" for="pActive">Aktif</label></div></div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-hvy-ghost" data-bs-dismiss="modal">Batal</button>
+          <button class="btn btn-hvy" id="btnSave"><i class="bi bi-check2 me-1"></i>Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/admin/js/admin-common.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      const el = (id) => document.getElementById(id);
+      let METHODS = [];
+
+      const TYPE_LABEL = { ewallet: 'E-Wallet', bank_transfer: 'Transfer Bank', qris: 'QRIS', retail: 'Retail', other: 'Lainnya' };
+
+      function feeLabel(m) {
+        const parts = [];
+        if (Number(m.fee_flat) > 0) parts.push(HVY.fmt(m.fee_flat));
+        if (Number(m.fee_percent) > 0) parts.push(m.fee_percent + '%');
+        return parts.length ? parts.join(' + ') : 'Gratis';
+      }
+
+      function render() {
+        el('tbody').innerHTML = METHODS.length ? METHODS.map(function (m) {
+          const max = Number(m.max_amount) > 0 ? HVY.fmt(m.max_amount) : '∞';
+          return '<tr>' +
+            '<td><div class="d-flex align-items-center gap-2">' +
+              (m.logo_url ? '<img src="' + HVY.escapeHtml(m.logo_url) + '" alt="" style="height:26px;width:auto">' : '<i class="bi bi-credit-card fs-5 silver-text"></i>') +
+              '<div><div class="fw-bold">' + HVY.escapeHtml(m.name) + '</div><div class="text-muted-2 small mono">' + HVY.escapeHtml(m.code) + '</div></div>' +
+            '</div></td>' +
+            '<td>' + (TYPE_LABEL[m.type] || HVY.escapeHtml(m.type)) + '</td>' +
+            '<td><span class="pill">' + HVY.escapeHtml(m.provider) + '</span></td>' +
+            '<td>' + feeLabel(m) + '</td>' +
+            '<td>' + HVY.fmt(m.min_amount) + ' / ' + max + '</td>' +
+            '<td>' + (m.is_active ? '<span class="badge-status st-success">Aktif</span>' : '<span class="badge-status st-expired">Off</span>') + '</td>' +
+            '<td class="text-nowrap">' +
+              '<button class="btn btn-hvy-ghost btn-sm" data-edit="' + m.id + '"><i class="bi bi-pencil"></i></button> ' +
+              '<button class="btn btn-hvy-ghost btn-sm text-danger" data-del="' + m.id + '"><i class="bi bi-trash"></i></button>' +
+            '</td>' +
+          '</tr>';
+        }).join('') : '<tr><td colspan="7" class="text-center text-muted-2 py-4">Belum ada metode pembayaran</td></tr>';
+        el('tbody').querySelectorAll('button[data-edit]').forEach((b) => b.addEventListener('click', () => openEdit(Number(b.dataset.edit))));
+        el('tbody').querySelectorAll('button[data-del]').forEach((b) => b.addEventListener('click', () => del(Number(b.dataset.del))));
+      }
+
+      function openAdd() {
+        el('modalTitle').textContent = 'Tambah Metode Pembayaran';
+        el('pmForm').reset();
+        el('pId').value = '';
+        el('pFeeFlat').value = 0; el('pFeePct').value = 0; el('pMin').value = 0; el('pMax').value = 0; el('pSort').value = 0;
+        el('pActive').checked = true;
+        el('pProvider').value = 'midtrans';
+        el('formError').classList.add('d-none');
+        ADMIN.showModal('editModal');
+      }
+
+      function openEdit(id) {
+        const m = METHODS.find((x) => x.id === id);
+        if (!m) return;
+        el('modalTitle').textContent = 'Edit Metode Pembayaran';
+        el('pId').value = m.id;
+        el('pCode').value = m.code;
+        el('pName').value = m.name;
+        el('pType').value = m.type;
+        el('pProvider').value = m.provider || 'midtrans';
+        el('pLogo').value = m.logo_url || '';
+        el('pFeeFlat').value = m.fee_flat;
+        el('pFeePct').value = m.fee_percent;
+        el('pMin').value = m.min_amount;
+        el('pMax').value = m.max_amount;
+        el('pInstr').value = m.instructions || '';
+        el('pSort').value = m.sort_order;
+        el('pActive').checked = !!m.is_active;
+        el('formError').classList.add('d-none');
+        ADMIN.showModal('editModal');
+      }
+
+      async function save() {
+        const id = el('pId').value;
+        const payload = {
+          code: el('pCode').value.trim().toLowerCase(),
+          name: el('pName').value.trim(),
+          type: el('pType').value,
+          provider: el('pProvider').value,
+          logo_url: el('pLogo').value.trim() || null,
+          fee_flat: Number(el('pFeeFlat').value) || 0,
+          fee_percent: Number(el('pFeePct').value) || 0,
+          min_amount: Number(el('pMin').value) || 0,
+          max_amount: Number(el('pMax').value) || 0,
+          instructions: el('pInstr').value.trim() || null,
+          is_active: el('pActive').checked,
+          sort_order: Number(el('pSort').value) || 0,
+        };
+        if (!payload.code || !payload.name) {
+          el('formError').textContent = 'Kode dan nama wajib diisi'; el('formError').classList.remove('d-none'); return;
+        }
+        const btn = el('btnSave');
+        HVY.setLoading(btn, true);
+        try {
+          if (id) await ADMIN.api.updatePaymentMethod(Number(id), payload);
+          else await ADMIN.api.createPaymentMethod(payload);
+          HVY.toast('Metode pembayaran disimpan', 'success');
+          ADMIN.hideModal('editModal');
+          await load();
+        } catch (err) {
+          el('formError').textContent = err.message; el('formError').classList.remove('d-none');
+        } finally { HVY.setLoading(btn, false); }
+      }
+
+      async function del(id) {
+        const m = METHODS.find((x) => x.id === id);
+        const ok = await ADMIN.confirmAction('Hapus metode "' + (m ? m.name : '') + '"?', { danger: true, okText: 'Hapus' });
+        if (!ok) return;
+        try { await ADMIN.api.deletePaymentMethod(id); HVY.toast('Metode dihapus', 'success'); await load(); }
+        catch (err) { HVY.toast(err.message, 'danger'); }
+      }
+
+      async function load() {
+        try {
+          const res = await ADMIN.api.paymentMethods();
+          METHODS = res.methods || [];
+          render();
+        } catch (err) {
+          el('tbody').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">' + HVY.escapeHtml(err.message) + '</td></tr>';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        const adm = await ADMIN.mountShell('payment');
+        if (!adm) return;
+        el('btnAdd').addEventListener('click', openAdd);
+        el('btnSave').addEventListener('click', save);
+        load();
+      });
+    })();
+  </script>
+</body>
+</html>

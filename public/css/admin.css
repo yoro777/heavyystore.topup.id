@@ -1,0 +1,269 @@
+/* ==========================================================================
+   HEAVY STORE TOP UP — Admin Panel theme
+   Extends public/css/style.css. Sidebar + topbar + data tables + stat cards.
+   ========================================================================== */
+
+:root {
+  --admin-sidebar-w: 264px;
+  --admin-topbar-h: 64px;
+}
+
+body.admin-body {
+  padding-bottom: 0;
+  background:
+    radial-gradient(1000px 500px at 100% -10%, rgba(255, 255, 255, .06), transparent 60%),
+    var(--bg);
+}
+
+/* ------------------------------------------------------------------ Layout */
+.admin-shell { display: flex; min-height: 100vh; }
+
+.admin-sidebar {
+  width: var(--admin-sidebar-w);
+  flex: 0 0 var(--admin-sidebar-w);
+  background: linear-gradient(180deg, rgba(20, 23, 29, .96), rgba(10, 12, 16, .98));
+  border-right: 1px solid var(--border);
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 1040;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform .28s ease;
+  backdrop-filter: blur(14px);
+}
+.admin-sidebar.open { transform: translateX(0); }
+
+.admin-sidebar .side-brand {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+.admin-sidebar .side-brand img { height: 38px; }
+.admin-sidebar .side-brand .t { font-weight: 800; letter-spacing: .02em; font-size: .95rem; }
+.admin-sidebar .side-brand .s { font-size: .58rem; letter-spacing: .26em; color: var(--muted); }
+
+.admin-nav { padding: .7rem; overflow-y: auto; flex: 1; }
+.admin-nav .nav-section {
+  font-size: .64rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  padding: .9rem .75rem .4rem;
+}
+.admin-nav a {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .62rem .75rem;
+  border-radius: 12px;
+  color: var(--silver-3);
+  font-size: .9rem;
+  font-weight: 500;
+  transition: background .18s ease, color .18s ease;
+}
+.admin-nav a i { font-size: 1.05rem; width: 1.25rem; text-align: center; }
+.admin-nav a:hover { background: var(--surface-2); color: #fff; }
+.admin-nav a.active {
+  background: var(--silver-gradient);
+  color: #0b0c0f;
+  font-weight: 700;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .45);
+}
+.admin-nav a .badge { margin-left: auto; }
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 0;
+  transition: margin .28s ease;
+}
+
+.admin-topbar {
+  height: var(--admin-topbar-h);
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: 0 1rem;
+  background: rgba(10, 12, 16, .82);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+}
+.admin-topbar .page-title { font-weight: 800; letter-spacing: -.01em; font-size: 1.05rem; }
+.admin-topbar .page-sub { font-size: .74rem; color: var(--muted); }
+
+.admin-content { padding: 1.1rem; max-width: 1400px; margin: 0 auto; }
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .55);
+  z-index: 1035;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+.sidebar-backdrop.show { opacity: 1; pointer-events: auto; }
+
+@media (min-width: 992px) {
+  .admin-sidebar { transform: translateX(0); }
+  .admin-main { margin-left: var(--admin-sidebar-w); }
+  .sidebar-backdrop { display: none; }
+  .admin-content { padding: 1.5rem; }
+}
+
+/* --------------------------------------------------------------- Stat cards */
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+.stat-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--silver-gradient);
+  opacity: .85;
+}
+.stat-card .label { font-size: .74rem; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.stat-card .value { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; margin-top: .25rem; }
+.stat-card .icon {
+  position: absolute;
+  right: .9rem;
+  top: .9rem;
+  font-size: 1.3rem;
+  color: var(--silver-4);
+  opacity: .8;
+}
+.stat-card .delta { font-size: .74rem; margin-top: .2rem; }
+
+/* --------------------------------------------------------------- Data table */
+.hvy-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.hvy-table { width: 100%; margin: 0; color: var(--text); border-collapse: separate; border-spacing: 0; }
+.hvy-table thead th {
+  background: rgba(255, 255, 255, .04);
+  color: var(--silver-3);
+  font-size: .72rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: .8rem .9rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.hvy-table tbody td {
+  padding: .8rem .9rem;
+  border-bottom: 1px solid var(--border);
+  font-size: .86rem;
+  vertical-align: middle;
+}
+.hvy-table tbody tr:last-child td { border-bottom: none; }
+.hvy-table tbody tr:hover { background: rgba(255, 255, 255, .03); }
+.hvy-table .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
+.table-responsive { border-radius: var(--radius); }
+
+/* ------------------------------------------------------------------ Toolbar */
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.admin-toolbar .form-control,
+.admin-toolbar .form-select { max-width: 240px; }
+.admin-toolbar .spacer { flex: 1; }
+
+/* ------------------------------------------------------------------ Modal */
+.modal-content {
+  background: linear-gradient(180deg, #14171d, #0e1015);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+}
+.modal-header, .modal-footer { border-color: var(--border); }
+.btn-close { filter: invert(1) grayscale(1) brightness(1.6); }
+
+/* ------------------------------------------------------------------ Charts */
+.chart-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+.chart-box h6 { font-weight: 700; }
+.bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 190px; padding-top: .5rem; }
+.bar-chart .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.bar-chart .bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: var(--silver-gradient);
+  min-height: 3px;
+  transition: height .5s ease;
+}
+.bar-chart .bar-label { font-size: .58rem; color: var(--muted-2); white-space: nowrap; }
+
+/* ------------------------------------------------------------------ Misc */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.kv { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px dashed var(--border); font-size: .86rem; }
+.kv:last-child { border-bottom: none; }
+.kv .k { color: var(--muted); }
+.kv .v { font-weight: 600; text-align: right; }
+
+.admin-login-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+.admin-login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(16px);
+}
+.admin-login-card .logo { height: 64px; }
+
+.empty-state { text-align: center; padding: 2.4rem 1rem; color: var(--muted); }
+.empty-state i { font-size: 2.2rem; opacity: .5; }
+
+.pagination-hvy { display: flex; gap: .4rem; justify-content: center; margin-top: 1rem; }
+.pagination-hvy button {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: .35rem .7rem;
+  font-size: .82rem;
+}
+.pagination-hvy button.active { background: var(--silver-gradient); color: #0b0c0f; font-weight: 700; }
+.pagination-hvy button:disabled { opacity: .4; }
